@@ -1,0 +1,44 @@
+import pandas as pd
+import os
+import requests
+from io import BytesIO
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Criando diretórios
+os.makedirs("data/raw", exist_ok=True)
+os.makedirs("data/processed", exist_ok=True)
+
+# URL dos dados da RAIS 
+URL_DADOS = "https://basedosdados.org/dataset/br-me-rais"
+
+# Função para baixar os dados
+def baixar_dados(url, caminho):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(caminho, "wb") as f:
+            f.write(response.content)
+        print(f"Dados baixados: {caminho}")
+    else:
+        print("Erro ao baixar os dados")
+
+# baixar_dados(URL_DADOS, "data/raw/rais.csv")
+
+# Leitura dos dados
+df = pd.read_csv("data/raw/rais.csv", dtype={"id_municipio": str})
+
+# Exibir amostra dos dados
+print(df.head())
+
+# Conversão de tipos
+df["ano"] = df["ano"].astype(int)
+df["quantidade_vinculos_ativos"] = df["quantidade_vinculos_ativos"].fillna(0).astype(int)
+
+# Análise exploratória inicial
+plt.figure(figsize=(12, 6))
+sns.histplot(df["ano"], bins=20, kde=True)
+plt.title("Distribuição dos Dados por Ano")
+plt.show()
+
+# Salvando dataset tratado
+df.to_csv("data/processed/rais_tratada.csv", index=False)
